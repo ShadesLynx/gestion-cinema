@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Projection{% endblock %}
+
+{% block body %}
+    <h1>Edit Projection</h1>
+
+    {{ include('projection/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_projection_index') }}">back to list</a>
+
+    {{ include('projection/_delete_form.html.twig') }}
+{% endblock %}

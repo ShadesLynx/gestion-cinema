@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Projection index{% endblock %}
+
+{% block body %}
+    <h1>Projection index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>DateProjection</th>
+                <th>Salle</th>
+                <th>NbPlaces</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for projection in projections %}
+            <tr>
+                <td>{{ projection.id }}</td>
+                <td>{{ projection.dateProjection ? projection.dateProjection|date('Y-m-d') : '' }}</td>
+                <td>{{ projection.salle }}</td>
+                <td>{{ projection.nbPlaces }}</td>
+                <td>
+                    <a href="{{ path('app_projection_show', {'id': projection.id}) }}">show</a>
+                    <a href="{{ path('app_projection_edit', {'id': projection.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_projection_new') }}">Create new</a>
+{% endblock %}

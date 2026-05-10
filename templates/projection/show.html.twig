@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Projection{% endblock %}
+
+{% block body %}
+    <h1>Projection</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ projection.id }}</td>
+            </tr>
+            <tr>
+                <th>DateProjection</th>
+                <td>{{ projection.dateProjection ? projection.dateProjection|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Salle</th>
+                <td>{{ projection.salle }}</td>
+            </tr>
+            <tr>
+                <th>NbPlaces</th>
+                <td>{{ projection.nbPlaces }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_projection_index') }}">back to list</a>
+
+    <a href="{{ path('app_projection_edit', {'id': projection.id}) }}">edit</a>
+
+    {{ include('projection/_delete_form.html.twig') }}
+{% endblock %}
