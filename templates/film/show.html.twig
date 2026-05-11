@@ -11,7 +11,10 @@
             position: relative; overflow: hidden;
         }
         .film-hero::before {
-            content: ''; position: absolute; inset: 0;
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none; /* TRÈS IMPORTANT : permet aux clics de traverser cet élément */
             background: radial-gradient(ellipse 50% 80% at 90% 50%, rgba(201,168,76,.07) 0%, transparent 60%);
         }
         .back-link {
@@ -81,6 +84,9 @@
             color: #08080e; font-weight: 700; border: none; padding: .6rem 1.5rem;
             border-radius: 6px; text-decoration: none; font-size: .85rem;
             white-space: nowrap; transition: opacity .2s; display: inline-block;
+            cursor: pointer; /* Indispensable pour un élément <button> */
+            position: relative;
+            z-index: 10; /
         }
         .btn-reserve:hover { opacity: .85; color: #08080e; }
         .btn-reserve-disabled {
@@ -156,7 +162,7 @@
                                 {# Real dateProjection from DB #}
                                 <div class="proj-date">
                                     <i class="fa fa-calendar me-2" style="color:var(--gold); font-size:.85rem"></i>
-                                    {{ projection.dateProjection ? projection.dateProjection|date('l d MMMM Y à H:i') : projection.dateProjection|date('d/m/Y à H:i') }}
+                                    {{ projection.dateProjection|date('Y-m-d') }}
                                 </div>
                                 <div class="proj-details">
                                     {# Real salle from DB #}
@@ -189,9 +195,11 @@
                                     <i class="fa fa-lock me-1"></i> Connexion requise
                                 </a>
                             {% else %}
-                                <a href="{{ path('app_reservation_new') }}?projection={{ projection.id }}" class="btn-reserve">
-                                    <i class="fa fa-ticket me-1"></i> Réserver
-                                </a>
+                                <form action="{{ path('app_reservation_create', {'projectionId': projection.id}) }}" method="POST">
+                                    <button type="submit" class="btn-reserve">
+                                        <i class="fa fa-ticket me-1"></i> Réserver
+                                    </button>
+                                </form>
                             {% endif %}
 
                         </div>

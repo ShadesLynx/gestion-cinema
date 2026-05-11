@@ -23,7 +23,7 @@ class ReservationCrudController extends AbstractCrudController
         return [
             DateTimeField::new('dateReservation'),
             ChoiceField::new('etat')->setChoices([
-                'En attente' => 'EN_ATTENT',
+                'En attente' => 'En attente',
                 'Confirmée'  => 'CONFIRMEE',
                 'Annulée'    => 'ANNULEE',
             ]),

@@ -107,7 +107,7 @@
                         <div>
                             {# Count confirmed from real DB #}
                             <div class="summary-num">
-                                {{ reservations|filter(r => r.etat == 'Confirmée')|length }}
+                                {{ reservations|filter(r => r.etat == 'CONFIRMEE')|length }}
                             </div>
                             <div class="summary-lbl">Confirmées</div>
                         </div>
@@ -117,7 +117,7 @@
                     <div class="summary-card">
                         <div class="summary-icon si-red"><i class="fa fa-clock-rotate-left"></i></div>
                         <div>
-                            {# Count pending from real DB #}
+
                             <div class="summary-num">
                                 {{ reservations|filter(r => r.etat == 'En attente')|length }}
                             </div>
@@ -161,20 +161,20 @@
 
                         {# Status from real etat field ── #}
                         <div class="res-actions">
-                            {% if reservation.etat == 'Confirmée' %}
+                            {% if reservation.etat == 'CONFIRMEE' %}
                                 <span class="badge-confirme"><i class="fa fa-circle-check me-1"></i>Confirmée</span>
-                            {% elseif reservation.etat == 'Annulée' %}
+                            {% elseif reservation.etat == 'ANNULEE' %}
                                 <span class="badge-annule"><i class="fa fa-ban me-1"></i>Annulée</span>
                             {% else %}
                                 <span class="badge-attente"><i class="fa fa-clock me-1"></i>En attente</span>
                                 {# Cancel only if still pending #}
-                                <form method="post" action="{{ path('app_reservation_delete', {'id': reservation.id}) }}"
-                                      onsubmit="return confirm('Annuler cette réservation ?')">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id) }}">
-                                    <button type="submit" class="btn-cancel">
-                                        <i class="fa fa-xmark me-1"></i>Annuler
-                                    </button>
-                                </form>
+{#                                <form method="post" action="{{ path('app_reservation_delete', {'id': reservation.id}) }}"#}
+{#                                      onsubmit="return confirm('Annuler cette réservation ?')">#}
+{#                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id) }}">#}
+{#                                    <button type="submit" class="btn-cancel">#}
+{#                                        <i class="fa fa-xmark me-1"></i>Annuler#}
+{#                                    </button>#}
+{#                                </form>#}
                             {% endif %}
                         </div>
 

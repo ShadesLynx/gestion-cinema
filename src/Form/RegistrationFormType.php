@@ -25,15 +25,7 @@ class RegistrationFormType extends AbstractType
             ->add('prenom', TextType::class, [
                 'constraints' => [new NotBlank(['message' => 'Le prénom est obligatoire'])]
             ])
-            ->add('roles', ChoiceType::class, [
-                'choices'  => [
-                    'Utilisateur' => 'ROLE_USER',
-                    'Administrateur' => 'ROLE_ADMIN',
 
-                ],
-                'multiple' => true,
-                'expanded' => true,
-            ])
             ->add('email')
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,

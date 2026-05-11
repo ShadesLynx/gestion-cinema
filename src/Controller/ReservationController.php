@@ -38,11 +38,11 @@ class ReservationController extends AbstractController
     }
 
     // ── New: create a reservation for a projection ──────────────────────────
-    #[Route('/new', name: 'app_reservation_new', methods: ['GET', 'POST'])]
+    #[Route('/{projectionId}', name: 'app_reservation_create', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_USER')]
-    public function new(Request $request, EntityManagerInterface $em, ProjectionRepository $projectionRepository): Response
+    public function new(int $projectionId,Request $request, EntityManagerInterface $em, ProjectionRepository $projectionRepository): Response
     {
-        $projectionId = $request->query->get('projection');
+        $projection = $projectionRepository->find($projectionId);
         $projection = $projectionId ? $projectionRepository->find($projectionId) : null;
 
         if (!$projection) {
