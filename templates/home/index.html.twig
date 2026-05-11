@@ -1,0 +1,223 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CinéMax — Films à l'affiche{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .hero {
+            position: relative; padding: 90px 0 70px; text-align: center; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201,168,76,.10) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-eyebrow {
+            display: inline-block; border: 1px solid var(--border); color: var(--gold);
+            font-size: .68rem; letter-spacing: 3px; text-transform: uppercase;
+            padding: .3rem 1rem; border-radius: 2px; margin-bottom: 1.3rem;
+        }
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 900; color: #fff;
+            line-height: 1.1; margin-bottom: .9rem;
+        }
+        .hero h1 em { font-style: normal; color: var(--gold); }
+        .hero p { color: var(--muted); font-size: 1rem; max-width: 440px; margin: 0 auto 2rem; }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold-lt)); color: #08080e;
+            font-weight: 700; border: none; padding: .65rem 1.6rem; border-radius: 6px;
+            text-decoration: none; font-size: .9rem; transition: opacity .2s, transform .15s; display: inline-block;
+        }
+        .btn-gold:hover { opacity: .85; transform: translateY(-2px); color: #08080e; }
+        .btn-outline-g {
+            border: 1px solid var(--border); color: var(--muted); padding: .63rem 1.5rem;
+            border-radius: 6px; text-decoration: none; font-size: .9rem;
+            transition: border-color .2s, color .2s; display: inline-block;
+        }
+        .btn-outline-g:hover { border-color: var(--gold); color: var(--gold); }
+        .stats-bar {
+            background: var(--card); border: 1px solid var(--border2); border-radius: 12px;
+            padding: 1.2rem 2rem; display: flex; justify-content: center; gap: 3rem;
+            max-width: 480px; margin: 3rem auto 0; flex-wrap: wrap;
+        }
+        .stat { text-align: center; }
+        .stat-num { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 900; color: var(--gold); }
+        .stat-label { font-size: .7rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+        /* Genre filter */
+        .genre-filter { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 2rem; }
+        .genre-btn {
+            background: var(--card2); border: 1px solid var(--border2); color: var(--muted);
+            font-size: .78rem; padding: .35rem .9rem; border-radius: 20px; cursor: pointer;
+            transition: all .2s; font-family: 'DM Sans', sans-serif; font-weight: 500;
+        }
+        .genre-btn:hover, .genre-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,.08); }
+
+        /* Film cards */
+        .film-card {
+            background: var(--card); border: 1px solid var(--border2); border-radius: 12px;
+            overflow: hidden; height: 100%; display: flex; flex-direction: column;
+            transition: transform .25s, border-color .25s, box-shadow .25s;
+        }
+        .film-card:hover { transform: translateY(-6px); border-color: rgba(201,168,76,.35); box-shadow: 0 24px 60px rgba(0,0,0,.5); }
+        .film-poster {
+            height: 200px; position: relative; overflow: hidden;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .poster-overlay { position: absolute; inset: 0; background: linear-gradient(to top, var(--card) 0%, transparent 50%); }
+        .poster-icon { font-size: 3rem; color: rgba(201,168,76,.2); }
+        .genre-badge {
+            position: absolute; top: 12px; left: 12px; background: rgba(8,8,14,.85);
+            border: 1px solid var(--border); color: var(--gold); font-size: .62rem;
+            letter-spacing: 2px; text-transform: uppercase; padding: .25rem .7rem;
+            border-radius: 3px; font-weight: 600; backdrop-filter: blur(8px);
+        }
+        .film-body { padding: 1.1rem 1.2rem 1.4rem; flex: 1; display: flex; flex-direction: column; }
+        .film-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: .4rem; }
+        .film-meta { font-size: .78rem; color: var(--muted); margin-bottom: .6rem; }
+        .film-meta i { color: var(--gold); margin-right: 4px; }
+        .proj-pill {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(201,168,76,.08); border: 1px solid rgba(201,168,76,.2);
+            border-radius: 20px; font-size: .72rem; color: var(--gold);
+            padding: .2rem .7rem; margin-bottom: 1rem; flex: 1;
+        }
+        .btn-see {
+            display: block; text-align: center; text-decoration: none;
+            border: 1px solid rgba(201,168,76,.3); color: var(--gold);
+            font-size: .82rem; font-weight: 600; padding: .5rem; border-radius: 6px;
+            transition: all .2s; letter-spacing: .4px;
+        }
+        .btn-see:hover { background: var(--gold); color: #08080e; border-color: var(--gold); }
+        .empty-state { text-align: center; padding: 6rem 2rem; color: var(--muted); }
+        .empty-state i { font-size: 3.5rem; opacity: .2; display: block; margin-bottom: 1rem; }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+    {# ── HERO ── #}
+    <section class="hero">
+        <div class="container">
+            <div class="hero-eyebrow">Bienvenue sur CinéMax</div>
+            <h1>Films à l'<em>Affiche</em></h1>
+            <p>Découvrez nos projections et réservez vos places en quelques clics.</p>
+
+            {% if not app.user %}
+                <a href="{{ path('app_register') }}" class="btn-gold me-2">
+                    <i class="fa fa-user-plus me-2"></i>Créer un compte
+                </a>
+                <a href="{{ path('app_login') }}" class="btn-outline-g">Se connecter</a>
+            {% else %}
+                <a href="{{ path('app_reservation_index') }}" class="btn-gold">
+                    <i class="fa fa-ticket me-2"></i>Mes réservations
+                </a>
+            {% endif %}
+
+            {# Real counts from DB — passed by HomeController #}
+            <div class="stats-bar">
+                <div class="stat">
+                    <div class="stat-num">{{ films|length }}</div>
+                    <div class="stat-label">Films</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">{{ totalProjections }}</div>
+                    <div class="stat-label">Projections</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">{{ genres|length }}</div>
+                    <div class="stat-label">Genres</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ── FILMS GRID ── #}
+    <section class="py-5">
+        <div class="container">
+
+            <div class="d-flex align-items-end justify-content-between mb-2 flex-wrap gap-2">
+                <div>
+                    <div class="section-label">Catalogue</div>
+                    <div class="section-title">Tous les Films</div>
+                    <div class="gold-line"></div>
+                </div>
+                <div style="font-size:.82rem; color:var(--muted)">
+                    {{ films|length }} film{{ films|length != 1 ? 's' : '' }}
+                </div>
+            </div>
+
+            {# Genre filter — built from REAL genres in DB #}
+            {% if genres|length > 0 %}
+                <div class="genre-filter mt-3">
+                    <button class="genre-btn active" data-genre="all">Tous</button>
+                    {% for genre in genres %}
+                        <button class="genre-btn" data-genre="{{ genre }}">{{ genre }}</button>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if films is empty %}
+                <div class="empty-state">
+                    <i class="fa fa-film"></i>
+                    <p>Aucun film disponible pour le moment.</p>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('admin') }}" class="btn-gold d-inline-block mt-3">
+                            <i class="fa fa-plus me-2"></i>Ajouter un film
+                        </a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="row g-4">
+                    {% for film in films %}
+                        <div class="col-sm-6 col-lg-4 col-xl-3 film-item" data-genre="{{ film.genre }}">
+                            <div class="film-card">
+                                <div class="film-poster">
+                                    <i class="fa fa-clapperboard poster-icon"></i>
+                                    <div class="poster-overlay"></div>
+                                    {% if film.genre %}
+                                        <div class="genre-badge">{{ film.genre }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="film-body">
+                                    <div class="film-title">{{ film.titre }}</div>
+                                    <div class="film-meta">
+                                        <i class="fa fa-calendar-days"></i>
+                                        {{ film.dateCreation ? film.dateCreation|date('Y') : '—' }}
+                                    </div>
+                                    {# projections count from real relation #}
+                                    <div class="proj-pill">
+                                        <i class="fa fa-clapperboard"></i>
+                                        {{ film.projections|length }}
+                                        séance{{ film.projections|length != 1 ? 's' : '' }}
+                                    </div>
+                                    <a href="{{ path('app_film_show', {'id': film.id}) }}" class="btn-see">
+                                        <i class="fa fa-eye me-1"></i> Voir les séances
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.querySelectorAll('.genre-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const genre = btn.dataset.genre;
+                document.querySelectorAll('.film-item').forEach(item => {
+                    item.style.display = (genre === 'all' || item.dataset.genre === genre) ? '' : 'none';
+                });
+            });
+        });
+    </script>
+{% endblock %}

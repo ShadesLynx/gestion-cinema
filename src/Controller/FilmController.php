@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Film;
 use App\Form\FilmType;
 use App\Repository\FilmRepository;
+use App\Repository\ProjectionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -43,10 +44,17 @@ final class FilmController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_film_show', methods: ['GET'])]
-    public function show(Film $film): Response
+    public function show(Film $film, ProjectionRepository $projectionRepository): Response
     {
+        // Get all projections for this film from DB, ordered by date
+        $projections = $projectionRepository->findBy(
+            ['film' => $film],
+            ['dateProjection' => 'ASC']
+        );
+
         return $this->render('film/show.html.twig', [
-            'film' => $film,
+            'film'        => $film,           // real film from DB
+            'projections' => $projections,    // real projections from DB
         ]);
     }
 

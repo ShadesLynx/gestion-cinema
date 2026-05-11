@@ -1,17 +1,252 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CinéMax{% endblock %}</title>
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* ═══════════════════════════════════════════
+           DESIGN TOKENS
+        ═══════════════════════════════════════════ */
+        :root {
+            --gold:     #c9a84c;
+            --gold-lt:  #e8c97a;
+            --dark:     #08080e;
+            --dark2:    #0f0f18;
+            --card:     #111119;
+            --card2:    #18181f;
+            --border:   rgba(201,168,76,.15);
+            --border2:  rgba(255,255,255,.06);
+            --text:     #e4e0d8;
+            --muted:    #6b6b7a;
+            --radius:   10px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--dark);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--dark); }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
+
+        /* ═══════════════════════════════════════════
+           NAVBAR
+        ═══════════════════════════════════════════ */
+        .site-nav {
+            position: sticky; top: 0; z-index: 1000;
+            background: rgba(8,8,14,.88);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: .85rem 0;
+        }
+        .nav-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.55rem;
+            font-weight: 900;
+            color: var(--gold);
+            text-decoration: none;
+            letter-spacing: 3px;
+        }
+        .nav-brand span { color: #fff; }
+        .nav-link-item {
+            color: var(--text);
+            text-decoration: none;
+            font-size: .88rem;
+            font-weight: 500;
+            letter-spacing: .3px;
+            padding: .4rem .75rem;
+            border-radius: 6px;
+            transition: color .2s, background .2s;
+        }
+        .nav-link-item:hover, .nav-link-item.active {
+            color: var(--gold);
+            background: rgba(201,168,76,.08);
+        }
+        .nav-link-item i { margin-right: 5px; }
+        .btn-nav-gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+            color: #08080e;
+            font-weight: 700;
+            font-size: .82rem;
+            border: none;
+            padding: .42rem 1.1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            letter-spacing: .4px;
+            transition: opacity .2s;
+        }
+        .btn-nav-gold:hover { opacity: .85; color: #08080e; }
+        .btn-nav-outline {
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: .82rem;
+            padding: .4rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: border-color .2s, color .2s;
+        }
+        .btn-nav-outline:hover { border-color: var(--gold); color: var(--gold); }
+        .user-chip {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: var(--card2);
+            border: 1px solid var(--border2);
+            border-radius: 20px;
+            padding: .3rem .9rem .3rem .5rem;
+            font-size: .8rem;
+            color: var(--text);
+        }
+        .user-chip .avatar {
+            width: 26px; height: 26px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .65rem; font-weight: 700; color: #08080e;
+        }
+
+        /* ═══════════════════════════════════════════
+           FLASH MESSAGES
+        ═══════════════════════════════════════════ */
+        .flash-wrap { margin: 1rem 0 0; }
+        .flash {
+            border-radius: 8px;
+            padding: .75rem 1.1rem;
+            font-size: .88rem;
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: .5rem;
+        }
+        .flash-success { background: rgba(34,197,94,.1);  border: 1px solid rgba(34,197,94,.25);  color: #86efac; }
+        .flash-danger  { background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.25);  color: #fca5a5; }
+        .flash-warning { background: rgba(234,179,8,.1);  border: 1px solid rgba(234,179,8,.25);  color: #fde047; }
+        .flash-info    { background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.25); color: #93c5fd; }
+
+        /* ═══════════════════════════════════════════
+           SHARED UTILITIES
+        ═══════════════════════════════════════════ */
+        .section-label {
+            font-size: .68rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--gold);
+            font-weight: 600;
+        }
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.6rem, 3vw, 2.4rem);
+            font-weight: 900;
+            color: #fff;
+            line-height: 1.15;
+        }
+        .gold-line {
+            width: 44px; height: 3px;
+            background: linear-gradient(90deg, var(--gold), transparent);
+            border-radius: 2px;
+            margin: .6rem 0 0;
+        }
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border2);
+            margin: 2rem 0;
+        }
+
+        /* ═══════════════════════════════════════════
+           FOOTER
+        ═══════════════════════════════════════════ */
+        .site-footer {
+            background: rgba(255,255,255,.02);
+            border-top: 1px solid var(--border2);
+            padding: 2.5rem 0;
+            text-align: center;
+            color: var(--muted);
+            font-size: .82rem;
+            margin-top: 7rem;
+        }
+        .site-footer strong { color: var(--gold); }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+
+<!-- ══════════════ NAVBAR ══════════════════════════════════ -->
+<nav class="site-nav">
+    <div class="container d-flex align-items-center gap-3 flex-wrap">
+
+        <a href="{{ path('app_home') }}" class="nav-brand me-3">CINÉ<span>MAX</span></a>
+
+        <div class="d-flex align-items-center gap-1 flex-grow-1">
+            <a href="{{ path('app_home') }}" class="nav-link-item {% if app.request.get('_route') == 'app_home' %}active{% endif %}">
+                <i class="fa fa-film"></i> Films
+            </a>
+            {% if app.user %}
+                <a href="{{ path('app_reservation_index') }}" class="nav-link-item {% if app.request.get('_route') == 'app_reservation_index' %}active{% endif %}">
+                    <i class="fa fa-ticket"></i> Mes Réservations
+                </a>
+            {% endif %}
+            {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('admin') }}" class="nav-link-item" style="color:var(--gold)">
+                    <i class="fa fa-gauge-high"></i> Admin
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            {% if app.user %}
+                <div class="user-chip">
+                    <div class="avatar">{{ app.user.prenom|slice(0,1)|upper }}</div>
+                    {{ app.user.prenom }}
+                </div>
+                <a href="{{ path('app_logout') }}" class="btn-nav-outline">
+                    <i class="fa fa-right-from-bracket me-1"></i>Quitter
+                </a>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="nav-link-item">Connexion</a>
+                <a href="{{ path('app_register') }}" class="btn-nav-gold">S'inscrire</a>
+            {% endif %}
+        </div>
+
+    </div>
+</nav>
+
+<!-- ══════════════ FLASH MESSAGES ═════════════════════════ -->
+<div class="container">
+    <div class="flash-wrap">
+        {% for msg in app.flashes('success') %}
+            <div class="flash flash-success"><i class="fa fa-circle-check"></i> {{ msg }}</div>
+        {% endfor %}
+        {% for msg in app.flashes('danger') %}
+            <div class="flash flash-danger"><i class="fa fa-circle-xmark"></i> {{ msg }}</div>
+        {% endfor %}
+        {% for msg in app.flashes('warning') %}
+            <div class="flash flash-warning"><i class="fa fa-triangle-exclamation"></i> {{ msg }}</div>
+        {% endfor %}
+        {% for msg in app.flashes('info') %}
+            <div class="flash flash-info"><i class="fa fa-circle-info"></i> {{ msg }}</div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ══════════════ MAIN CONTENT ════════════════════════════ -->
+{% block body %}{% endblock %}
+
+<!-- ══════════════ FOOTER ══════════════════════════════════ -->
+<footer class="site-footer">
+    <div class="container">
+        <p>&copy; {{ "now"|date("Y") }} <strong>CinéMax</strong> — Tous droits réservés.</p>
+    </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
 </html>

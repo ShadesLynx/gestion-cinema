@@ -1,39 +1,237 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Projection index{% endblock %}
+{% block title %}Projections — CinéMax{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .page-header {
+            padding: 3rem 0 2rem;
+            border-bottom: 1px solid var(--border2);
+            margin-bottom: 2.5rem;
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+            color: #08080e; font-weight: 700; border: none;
+            padding: .55rem 1.3rem; border-radius: 6px;
+            text-decoration: none; font-size: .85rem;
+            display: inline-flex; align-items: center; gap: 7px;
+            transition: opacity .2s;
+        }
+        .btn-gold:hover { opacity: .85; color: #08080e; }
+
+        /* ── TABLE ── */
+        .cinema-table {
+            width: 100%; border-collapse: separate; border-spacing: 0 6px;
+        }
+        .cinema-table thead tr th {
+            background: var(--card2); color: var(--muted);
+            font-size: .7rem; text-transform: uppercase;
+            letter-spacing: 2px; font-weight: 600;
+            padding: .75rem 1.2rem; border: none;
+        }
+        .cinema-table thead tr th:first-child { border-radius: 8px 0 0 8px; }
+        .cinema-table thead tr th:last-child  { border-radius: 0 8px 8px 0; }
+
+        .cinema-table tbody tr td {
+            background: var(--card);
+            border-top: 1px solid var(--border2);
+            border-bottom: 1px solid var(--border2);
+            padding: 1rem 1.2rem; vertical-align: middle;
+            transition: background .2s;
+        }
+        .cinema-table tbody tr td:first-child {
+            border-left: 1px solid var(--border2); border-radius: 8px 0 0 8px;
+        }
+        .cinema-table tbody tr td:last-child {
+            border-right: 1px solid var(--border2); border-radius: 0 8px 8px 0;
+        }
+        .cinema-table tbody tr:hover td {
+            background: var(--card2); border-color: rgba(201,168,76,.2);
+        }
+
+        .id-badge {
+            display: inline-block; background: rgba(201,168,76,.1);
+            border: 1px solid rgba(201,168,76,.2); color: var(--gold);
+            font-size: .72rem; font-weight: 700; padding: .18rem .6rem; border-radius: 4px;
+        }
+
+        /* Date + time split display */
+        .date-main { color: #fff; font-weight: 600; font-size: .88rem; }
+        .date-time { color: var(--muted); font-size: .75rem; margin-top: 1px; }
+        .date-time i { color: var(--gold); margin-right: 4px; }
+
+        /* Salle badge */
+        .salle-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,.04); border: 1px solid var(--border2);
+            color: var(--text); font-size: .82rem; font-weight: 600;
+            padding: .3rem .85rem; border-radius: 6px;
+        }
+        .salle-badge i { color: var(--gold); }
+
+        /* Places badge */
+        .places-ok   { background: rgba(34,197,94,.1);  border: 1px solid rgba(34,197,94,.25);  color: #86efac; font-size: .78rem; font-weight: 700; padding: .28rem .8rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; }
+        .places-low  { background: rgba(234,179,8,.1);  border: 1px solid rgba(234,179,8,.25);  color: #fde047; font-size: .78rem; font-weight: 700; padding: .28rem .8rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; }
+        .places-none { background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.25);  color: #fca5a5; font-size: .78rem; font-weight: 700; padding: .28rem .8rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; }
+
+        /* Actions */
+        .action-btns { display: flex; gap: .5rem; align-items: center; }
+        .btn-show {
+            display: inline-flex; align-items: center; gap: 5px;
+            border: 1px solid rgba(201,168,76,.3); color: var(--gold);
+            font-size: .75rem; font-weight: 600; padding: .32rem .8rem;
+            border-radius: 6px; text-decoration: none; transition: all .2s;
+        }
+        .btn-show:hover { background: var(--gold); color: #08080e; }
+        .btn-edit {
+            display: inline-flex; align-items: center; gap: 5px;
+            border: 1px solid var(--border2); color: var(--muted);
+            font-size: .75rem; padding: .32rem .8rem;
+            border-radius: 6px; text-decoration: none; transition: all .2s;
+        }
+        .btn-edit:hover { border-color: #93c5fd; color: #93c5fd; }
+
+        /* Empty */
+        .empty-row td {
+            text-align: center; padding: 4rem !important;
+            color: var(--muted); font-size: .9rem;
+        }
+        .empty-row td i { display: block; font-size: 2.5rem; opacity: .2; margin-bottom: .8rem; }
+
+        /* Stats bar */
+        .stats-row {
+            display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;
+        }
+        .stat-chip {
+            background: var(--card); border: 1px solid var(--border2); border-radius: 8px;
+            padding: .7rem 1.2rem; display: flex; align-items: center; gap: .6rem;
+            font-size: .82rem;
+        }
+        .stat-chip i { color: var(--gold); }
+        .stat-chip strong { color: #fff; }
+        .stat-chip span { color: var(--muted); }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Projection index</h1>
+    <div class="container">
 
-    <table class="table">
-        <thead>
+        {# ── Header ── #}
+        <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <div class="section-label">Planning</div>
+                <div class="section-title">Projections</div>
+                <div class="gold-line"></div>
+            </div>
+            <a href="{{ path('app_projection_new') }}" class="btn-gold">
+                <i class="fa fa-plus"></i> Nouvelle projection
+            </a>
+        </div>
+
+        {# ── Stats from real DB data ── #}
+        <div class="stats-row">
+            <div class="stat-chip">
+                <i class="fa fa-clapperboard"></i>
+                <strong>{{ projections|length }}</strong>
+                <span>projection{{ projections|length != 1 ? 's' : '' }}</span>
+            </div>
+            <div class="stat-chip">
+                <i class="fa fa-chair"></i>
+                <strong>{{ projections|sum(p => p.nbPlaces) }}</strong>
+                <span>places totales</span>
+            </div>
+            <div class="stat-chip">
+                <i class="fa fa-circle-check" style="color:#86efac"></i>
+                <strong>{{ projections|filter(p => p.nbPlaces > 0)|length }}</strong>
+                <span>avec places dispo</span>
+            </div>
+            <div class="stat-chip">
+                <i class="fa fa-ban" style="color:#fca5a5"></i>
+                <strong>{{ projections|filter(p => p.nbPlaces <= 0)|length }}</strong>
+                <span>complets</span>
+            </div>
+        </div>
+
+        {# ── Table ── #}
+        <table class="cinema-table">
+            <thead>
             <tr>
-                <th>Id</th>
-                <th>DateProjection</th>
+                <th>#</th>
+                <th>Film</th>
+                <th>Date & Heure</th>
                 <th>Salle</th>
-                <th>NbPlaces</th>
-                <th>actions</th>
+                <th>Places</th>
+                <th>Actions</th>
             </tr>
-        </thead>
-        <tbody>
-        {% for projection in projections %}
-            <tr>
-                <td>{{ projection.id }}</td>
-                <td>{{ projection.dateProjection ? projection.dateProjection|date('Y-m-d') : '' }}</td>
-                <td>{{ projection.salle }}</td>
-                <td>{{ projection.nbPlaces }}</td>
-                <td>
-                    <a href="{{ path('app_projection_show', {'id': projection.id}) }}">show</a>
-                    <a href="{{ path('app_projection_edit', {'id': projection.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {% for projection in projections %}
+                <tr>
+                    <td><span class="id-badge">#{{ projection.id }}</span></td>
 
-    <a href="{{ path('app_projection_new') }}">Create new</a>
+                    {# Film name from DB relation #}
+                    <td>
+                        <div style="font-family:'Playfair Display',serif; font-weight:700; color:#fff; font-size:.95rem">
+                            {{ projection.film is defined and projection.film ? projection.film.titre : '—' }}
+                        </div>
+                        {% if projection.film is defined and projection.film %}
+                            <div style="font-size:.72rem; color:var(--muted); margin-top:2px">
+                                {{ projection.film.genre }}
+                            </div>
+                        {% endif %}
+                    </td>
+
+                    {# Real dateProjection from DB #}
+                    <td>
+                        <div class="date-main">
+                            {{ projection.dateProjection ? projection.dateProjection|date('d/m/Y') : '—' }}
+                        </div>
+                        <div class="date-time">
+                            <i class="fa fa-clock"></i>
+                            {{ projection.dateProjection ? projection.dateProjection|date('H:i') : '' }}
+                        </div>
+                    </td>
+
+                    {# Real salle from DB #}
+                    <td>
+                        <div class="salle-badge">
+                            <i class="fa fa-door-open"></i>
+                            Salle {{ projection.salle }}
+                        </div>
+                    </td>
+
+                    {# Real nbPlaces from DB with color coding #}
+                    <td>
+                        {% if projection.nbPlaces <= 0 %}
+                            <span class="places-none"><i class="fa fa-ban"></i> Complet</span>
+                        {% elseif projection.nbPlaces <= 5 %}
+                            <span class="places-low"><i class="fa fa-triangle-exclamation"></i> {{ projection.nbPlaces }} restante{{ projection.nbPlaces != 1 ? 's' : '' }}</span>
+                        {% else %}
+                            <span class="places-ok"><i class="fa fa-chair"></i> {{ projection.nbPlaces }} places</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <div class="action-btns">
+                            <a href="{{ path('app_projection_show', {'id': projection.id}) }}" class="btn-show">
+                                <i class="fa fa-eye"></i> Voir
+                            </a>
+                            <a href="{{ path('app_projection_edit', {'id': projection.id}) }}" class="btn-edit">
+                                <i class="fa fa-pen"></i> Modifier
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr class="empty-row">
+                    <td colspan="6">
+                        <i class="fa fa-clapperboard"></i>
+                        Aucune projection trouvée. <a href="{{ path('app_projection_new') }}" style="color:var(--gold)">Créer la première</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
 {% endblock %}
