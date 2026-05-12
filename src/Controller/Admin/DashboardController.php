@@ -12,6 +12,7 @@ use App\Controller\Admin\ReservationCrudController;
 use App\Controller\Admin\UserCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Menu\SubMenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use Symfony\Component\HttpFoundation\Response;
@@ -60,13 +61,19 @@ class DashboardController extends AbstractDashboardController
 
     public function configureMenuItems(): iterable
     {
-
+        yield MenuItem::section('Statistics');
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
-        yield MenuItem::linkTo(UserCrudController::class, 'Users', 'fa fa-users');
-        yield MenuItem::linkTo(ProjectionCrudController::class, 'Projection', 'fa fa-clapperboard');
-        yield MenuItem::linkTo(ReservationCrudController::class, 'Reservation', 'fa fa-ticket');
-        yield MenuItem::linkTo(FilmCrudController::class, 'Film', 'fa fa-film');
 
-
+        yield MenuItem::section('Management');
+        yield MenuItem::subMenu('Cinema', 'fa fa-film')
+            ->setSubItems([
+                MenuItem::linkTo(FilmCrudController::class, 'Films', 'fa fa-film'),
+                MenuItem::linkTo(ProjectionCrudController::class, 'Projections', 'fa fa-clapperboard'),
+                MenuItem::linkTo(ReservationCrudController::class, 'Reservations', 'fa fa-ticket'),
+            ]);
+        yield MenuItem::subMenu('Users', 'fa fa-users')
+            ->setSubItems([
+                MenuItem::linkTo(UserCrudController::class, 'Users', 'fa fa-users'),
+            ]);
     }
 }
