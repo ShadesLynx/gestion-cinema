@@ -1,81 +1,110 @@
 <?php
 
+// ─────────────────────────────────────────────────────────────────────────────
+// REPLACE your existing ReservationController.php
+// Path: src/Controller/ReservationController.php
+// ─────────────────────────────────────────────────────────────────────────────
+
 namespace App\Controller;
 
 use App\Entity\Reservation;
 use App\Form\ReservationType;
+use App\Repository\ProjectionRepository;
 use App\Repository\ReservationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/reservation')]
-final class ReservationController extends AbstractController
+class ReservationController extends AbstractController
 {
-    #[Route(name: 'app_reservation_index', methods: ['GET'])]
+    // ── List: user sees ONLY their own reservations from DB ─────────────────
+    #[Route('/', name: 'app_reservation_index', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
     public function index(ReservationRepository $reservationRepository): Response
     {
+        // Filter by logged-in user — only their reservations
+        $reservations = $reservationRepository->findBy(
+            ['user' => $this->getUser()],
+            ['dateReservation' => 'DESC']           // newest first
+        );
+
         return $this->render('reservation/index.html.twig', [
-            'reservations' => $reservationRepository->findAll(),
+            'reservations' => $reservations,  // real data from DB
         ]);
     }
 
-    #[Route('/new', name: 'app_reservation_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    // ── New: create a reservation for a projection ──────────────────────────
+    #[Route('/{projectionId}', name: 'app_reservation_create', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function new(int $projectionId,Request $request, EntityManagerInterface $em, ProjectionRepository $projectionRepository): Response
     {
+        $projection = $projectionRepository->find($projectionId);
+        $projection = $projectionId ? $projectionRepository->find($projectionId) : null;
+
+        if (!$projection) {
+            $this->addFlash('danger', 'Projection introuvable.');
+            return $this->redirectToRoute('app_home');
+        }
+
+        // ✅ Use getNbPlaces() – note the capital 'B'
+        if ($projection->getNbPlaces() <= 0) {
+            $this->addFlash('danger', 'Cette projection est complète.');
+            return $this->redirectToRoute('app_film_show', ['id' => $projection->getFilm()->getId()]);
+        }
+
         $reservation = new Reservation();
+        $reservation->setDateReservation(new \DateTime());
+        $reservation->setEtat('En attente');
+        $reservation->setUser($this->getUser());
+        $reservation->setProjection($projection);
+
         $form = $this->createForm(ReservationType::class, $reservation);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($reservation);
-            $entityManager->flush();
+            $projection->setNbPlaces($projection->getNbPlaces() - 1);
 
-            return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
+            $em->persist($reservation);
+            $em->flush();
+
+            $this->addFlash('success', '🎟️ Réservation effectuée avec succès !');
+            return $this->redirectToRoute('app_reservation_index');
         }
 
         return $this->render('reservation/new.html.twig', [
-            'reservation' => $reservation,
-            'form' => $form,
+            'form' => $form->createView(),
+            'projection' => $projection,
         ]);
     }
 
-    #[Route('/{id}', name: 'app_reservation_show', methods: ['GET'])]
-    public function show(Reservation $reservation): Response
-    {
-        return $this->render('reservation/show.html.twig', [
-            'reservation' => $reservation,
-        ]);
-    }
-
-    #[Route('/{id}/edit', name: 'app_reservation_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Reservation $reservation, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(ReservationType::class, $reservation);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('reservation/edit.html.twig', [
-            'reservation' => $reservation,
-            'form' => $form,
-        ]);
-    }
-
+    // ── Delete / Cancel ──────────────────────────────────────────────────────
     #[Route('/{id}', name: 'app_reservation_delete', methods: ['POST'])]
-    public function delete(Request $request, Reservation $reservation, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$reservation->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($reservation);
-            $entityManager->flush();
+    #[IsGranted('ROLE_USER')]
+    public function delete(
+        Request $request,
+        Reservation $reservation,
+        EntityManagerInterface $em
+    ): Response {
+        // Security: only the owner can cancel
+        if ($reservation->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException();
         }
 
-        return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
+        if ($this->isCsrfTokenValid('delete' . $reservation->getId(), $request->getPayload()->getString('_token'))) {
+            // Restore the place in DB
+            $projection = $reservation->getProjection();
+            $projection->setNbPlaces($projection->getNbPlaces() + 1);
+
+            $em->remove($reservation);
+            $em->flush();
+
+            $this->addFlash('warning', 'Réservation annulée.');
+        }
+
+        return $this->redirectToRoute('app_reservation_index');
     }
 }

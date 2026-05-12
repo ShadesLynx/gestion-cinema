@@ -14,18 +14,18 @@ class ReservationType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder
-            ->add('dateReservation')
-            ->add('etat')
-            ->add('user', EntityType::class, [
-                'class' => User::class,
-                'choice_label' => 'id',
-            ])
-            ->add('projection', EntityType::class, [
-                'class' => Projection::class,
-                'choice_label' => 'id',
-            ])
-        ;
+//        $builder
+//            ->add('dateReservation')
+//            ->add('etat')
+//            ->add('user', EntityType::class, [
+//                'class' => User::class,
+//                'choice_label' => 'id',
+//            ])
+//            ->add('projection', EntityType::class, [
+//                'class' => Projection::class,
+//                'choice_label' => 'id',
+//            ])
+//        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

@@ -1,39 +1,180 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Film index{% endblock %}
+{% block title %}Films — CinéMax{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .page-header {
+            padding: 3rem 0 2rem;
+            border-bottom: 1px solid var(--border2);
+            margin-bottom: 2.5rem;
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+            color: #08080e; font-weight: 700; border: none;
+            padding: .55rem 1.3rem; border-radius: 6px;
+            text-decoration: none; font-size: .85rem;
+            display: inline-flex; align-items: center; gap: 7px;
+            transition: opacity .2s;
+        }
+        .btn-gold:hover { opacity: .85; color: #08080e; }
+
+        /* ── TABLE ── */
+        .cinema-table {
+            width: 100%; border-collapse: separate; border-spacing: 0 6px;
+        }
+        .cinema-table thead tr th {
+            background: var(--card2);
+            color: var(--muted);
+            font-size: .7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            padding: .75rem 1.2rem;
+            border: none;
+        }
+        .cinema-table thead tr th:first-child { border-radius: 8px 0 0 8px; }
+        .cinema-table thead tr th:last-child  { border-radius: 0 8px 8px 0; }
+
+        .cinema-table tbody tr td {
+            background: var(--card);
+            border-top: 1px solid var(--border2);
+            border-bottom: 1px solid var(--border2);
+            padding: 1rem 1.2rem;
+            vertical-align: middle;
+            transition: background .2s;
+        }
+        .cinema-table tbody tr td:first-child {
+            border-left: 1px solid var(--border2);
+            border-radius: 8px 0 0 8px;
+        }
+        .cinema-table tbody tr td:last-child {
+            border-right: 1px solid var(--border2);
+            border-radius: 0 8px 8px 0;
+        }
+        .cinema-table tbody tr:hover td {
+            background: var(--card2);
+            border-color: rgba(201,168,76,.2);
+        }
+
+        .id-badge {
+            display: inline-block;
+            background: rgba(201,168,76,.1);
+            border: 1px solid rgba(201,168,76,.2);
+            color: var(--gold); font-size: .72rem; font-weight: 700;
+            padding: .18rem .6rem; border-radius: 4px;
+        }
+        .film-title-cell {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700; color: #fff; font-size: 1rem;
+        }
+        .genre-pill {
+            display: inline-block;
+            background: rgba(255,255,255,.05);
+            border: 1px solid var(--border2);
+            color: var(--muted); font-size: .72rem;
+            padding: .2rem .7rem; border-radius: 20px;
+        }
+        .date-text { color: var(--muted); font-size: .82rem; }
+        .date-text i { color: var(--gold); margin-right: 5px; }
+
+        /* Actions */
+        .action-btns { display: flex; gap: .5rem; align-items: center; }
+        .btn-show {
+            display: inline-flex; align-items: center; gap: 5px;
+            border: 1px solid rgba(201,168,76,.3); color: var(--gold);
+            font-size: .75rem; font-weight: 600; padding: .32rem .8rem;
+            border-radius: 6px; text-decoration: none; transition: all .2s;
+        }
+        .btn-show:hover { background: var(--gold); color: #08080e; }
+        .btn-edit {
+            display: inline-flex; align-items: center; gap: 5px;
+            border: 1px solid var(--border2); color: var(--muted);
+            font-size: .75rem; padding: .32rem .8rem;
+            border-radius: 6px; text-decoration: none; transition: all .2s;
+        }
+        .btn-edit:hover { border-color: #93c5fd; color: #93c5fd; }
+
+        /* Empty */
+        .empty-row td {
+            text-align: center; padding: 4rem !important;
+            color: var(--muted); font-size: .9rem;
+        }
+        .empty-row td i { display: block; font-size: 2.5rem; opacity: .2; margin-bottom: .8rem; }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Film index</h1>
+    <div class="container">
 
-    <table class="table">
-        <thead>
+        {# ── Header ── #}
+        <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <div class="section-label">Catalogue</div>
+                <div class="section-title">Films</div>
+                <div class="gold-line"></div>
+            </div>
+            <a href="{{ path('app_film_new') }}" class="btn-gold">
+                <i class="fa fa-plus"></i> Nouveau film
+            </a>
+        </div>
+
+        {# ── Count ── #}
+        <div class="mb-3" style="font-size:.82rem; color:var(--muted)">
+            <i class="fa fa-film me-2" style="color:var(--gold)"></i>
+            {{ films|length }} film{{ films|length != 1 ? 's' : '' }} au total
+        </div>
+
+        {# ── Table ── #}
+        <table class="cinema-table">
+            <thead>
             <tr>
-                <th>Id</th>
+                <th>#</th>
                 <th>Titre</th>
-                <th>DateCreation</th>
                 <th>Genre</th>
-                <th>actions</th>
+                <th>Date de création</th>
+                <th>Actions</th>
             </tr>
-        </thead>
-        <tbody>
-        {% for film in films %}
-            <tr>
-                <td>{{ film.id }}</td>
-                <td>{{ film.titre }}</td>
-                <td>{{ film.dateCreation ? film.dateCreation|date('Y-m-d') : '' }}</td>
-                <td>{{ film.genre }}</td>
-                <td>
-                    <a href="{{ path('app_film_show', {'id': film.id}) }}">show</a>
-                    <a href="{{ path('app_film_edit', {'id': film.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {% for film in films %}
+                <tr>
+                    <td><span class="id-badge">#{{ film.id }}</span></td>
+                    <td><div class="film-title-cell">{{ film.titre }}</div></td>
+                    <td>
+                        {% if film.genre %}
+                            <span class="genre-pill">{{ film.genre }}</span>
+                        {% else %}
+                            <span style="color:var(--muted)">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                    <span class="date-text">
+                        <i class="fa fa-calendar-days"></i>
+                        {{ film.dateCreation ? film.dateCreation|date('d/m/Y') : '—' }}
+                    </span>
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <a href="{{ path('app_film_show', {'id': film.id}) }}" class="btn-show">
+                                <i class="fa fa-eye"></i> Voir
+                            </a>
+                            <a href="{{ path('app_film_edit', {'id': film.id}) }}" class="btn-edit">
+                                <i class="fa fa-pen"></i> Modifier
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr class="empty-row">
+                    <td colspan="5">
+                        <i class="fa fa-film"></i>
+                        Aucun film trouvé. <a href="{{ path('app_film_new') }}" style="color:var(--gold)">Ajouter le premier</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
 
-    <a href="{{ path('app_film_new') }}">Create new</a>
+    </div>
 {% endblock %}

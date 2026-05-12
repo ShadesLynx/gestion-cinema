@@ -1,37 +1,187 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Reservation index{% endblock %}
+{% block title %}Mes Réservations — CinéMax{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .page-header {
+            padding: 3rem 0 2rem;
+            border-bottom: 1px solid var(--border2);
+            margin-bottom: 3rem;
+        }
+        .res-row {
+            background: var(--card); border: 1px solid var(--border2); border-radius: 12px;
+            padding: 1.4rem 1.6rem; transition: border-color .2s;
+            display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+        }
+        .res-row:hover { border-color: rgba(201,168,76,.2); }
+
+        .res-film-name {
+            font-family: 'Playfair Display', serif; font-size: 1.05rem;
+            font-weight: 700; color: #fff; margin-bottom: .25rem;
+        }
+        .res-meta { font-size: .78rem; color: var(--muted); }
+        .res-meta i { color: var(--gold); margin-right: 4px; }
+        .res-meta span { margin-right: .8rem; }
+
+        /* Status badges */
+        .badge-attente  { background: rgba(234,179,8,.1);  border: 1px solid rgba(234,179,8,.25);  color: #fde047; font-size: .72rem; padding: .25rem .75rem; border-radius: 20px; font-weight: 600; }
+        .badge-confirme { background: rgba(34,197,94,.1);  border: 1px solid rgba(34,197,94,.25);  color: #86efac; font-size: .72rem; padding: .25rem .75rem; border-radius: 20px; font-weight: 600; }
+        .badge-annule   { background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.25);  color: #fca5a5; font-size: .72rem; padding: .25rem .75rem; border-radius: 20px; font-weight: 600; }
+
+        .res-actions { margin-left: auto; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+        .btn-cancel {
+            background: transparent; border: 1px solid rgba(239,68,68,.3);
+            color: #fca5a5; font-size: .78rem; padding: .35rem .9rem;
+            border-radius: 6px; cursor: pointer; transition: all .2s; font-family: 'DM Sans', sans-serif;
+        }
+        .btn-cancel:hover { background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.6); }
+        .res-date-badge {
+            background: var(--card2); border: 1px solid var(--border2); border-radius: 8px;
+            padding: .6rem .9rem; text-align: center; flex-shrink: 0;
+        }
+        .res-date-day { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 900; color: var(--gold); line-height: 1; }
+        .res-date-mon { font-size: .65rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+
+        .empty-state { text-align: center; padding: 6rem 2rem; color: var(--muted); }
+        .empty-state i { font-size: 3.5rem; opacity: .2; display: block; margin-bottom: 1rem; }
+        .btn-gold-sm {
+            background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+            color: #08080e; font-weight: 700; border: none; padding: .55rem 1.4rem;
+            border-radius: 6px; text-decoration: none; font-size: .85rem; display: inline-block;
+            transition: opacity .2s;
+        }
+        .btn-gold-sm:hover { opacity: .85; color: #08080e; }
+
+        /* Summary cards */
+        .summary-card {
+            background: var(--card); border: 1px solid var(--border2); border-radius: 10px;
+            padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 1rem;
+        }
+        .summary-icon {
+            width: 42px; height: 42px; border-radius: 8px; display: flex;
+            align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+        }
+        .si-gold  { background: rgba(201,168,76,.12); color: var(--gold); }
+        .si-green { background: rgba(34,197,94,.1);   color: #86efac; }
+        .si-red   { background: rgba(239,68,68,.1);   color: #fca5a5; }
+        .summary-num { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 900; color: #fff; line-height: 1; }
+        .summary-lbl { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Reservation index</h1>
+    <div class="container">
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>DateReservation</th>
-                <th>Etat</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for reservation in reservations %}
-            <tr>
-                <td>{{ reservation.id }}</td>
-                <td>{{ reservation.dateReservation ? reservation.dateReservation|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ reservation.etat }}</td>
-                <td>
-                    <a href="{{ path('app_reservation_show', {'id': reservation.id}) }}">show</a>
-                    <a href="{{ path('app_reservation_edit', {'id': reservation.id}) }}">edit</a>
-                </td>
-            </tr>
+        {# ── Page Header ── #}
+        <div class="page-header">
+            <div class="section-label">Espace personnel</div>
+            <div class="section-title">Mes Réservations</div>
+            <div class="gold-line"></div>
+        </div>
+
+        {% if reservations is empty %}
+            <div class="empty-state">
+                <i class="fa fa-ticket"></i>
+                <p class="mb-3">Vous n'avez aucune réservation pour le moment.</p>
+                <a href="{{ path('app_home') }}" class="btn-gold-sm">
+                    <i class="fa fa-film me-2"></i>Découvrir les films
+                </a>
+            </div>
         {% else %}
-            <tr>
-                <td colspan="4">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
 
-    <a href="{{ path('app_reservation_new') }}">Create new</a>
+            {# ── Summary stats from real DB data ── #}
+            <div class="row g-3 mb-4">
+                <div class="col-sm-4">
+                    <div class="summary-card">
+                        <div class="summary-icon si-gold"><i class="fa fa-ticket"></i></div>
+                        <div>
+                            <div class="summary-num">{{ reservations|length }}</div>
+                            <div class="summary-lbl">Total</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="summary-card">
+                        <div class="summary-icon si-green"><i class="fa fa-circle-check"></i></div>
+                        <div>
+                            {# Count confirmed from real DB #}
+                            <div class="summary-num">
+                                {{ reservations|filter(r => r.etat == 'CONFIRMEE')|length }}
+                            </div>
+                            <div class="summary-lbl">Confirmées</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="summary-card">
+                        <div class="summary-icon si-red"><i class="fa fa-clock-rotate-left"></i></div>
+                        <div>
+
+                            <div class="summary-num">
+                                {{ reservations|filter(r => r.etat == 'En attente')|length }}
+                            </div>
+                            <div class="summary-lbl">En attente</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# ── Reservations list from real DB ── #}
+            <div class="d-flex flex-column gap-3">
+                {% for reservation in reservations %}
+                    <div class="res-row">
+
+                        {# Date badge from real dateR ── #}
+                        <div class="res-date-badge">
+                            <div class="res-date-day">{{ reservation.dateReservation ? reservation.dateReservation|date('d') : '—' }}</div>
+                            <div class="res-date-mon">{{ reservation.dateReservation ? reservation.dateReservation|date('M') : '' }}</div>
+                        </div>
+
+                        {# Film + projection info from real DB relations #}
+                        <div class="flex-grow-1">
+                            <div class="res-film-name">
+                                {{ reservation.projection.film.titre }}
+                            </div>
+                            <div class="res-meta">
+                        <span>
+                            <i class="fa fa-clock"></i>
+                            {{ reservation.projection.dateProjection ? reservation.projection.dateProjection|date('d/m/Y') : '—' }}
+                        </span>
+                                <span>
+                            <i class="fa fa-door-open"></i>
+                            Salle {{ reservation.projection.salle }}
+                        </span>
+                                <span>
+                            <i class="fa fa-calendar-days"></i>
+                            Réservé le {{ reservation.dateReservation ? reservation.dateReservation|date('d/m/Y') : '—' }}
+                        </span>
+                            </div>
+                        </div>
+
+                        {# Status from real etat field ── #}
+                        <div class="res-actions">
+                            {% if reservation.etat == 'CONFIRMEE' %}
+                                <span class="badge-confirme"><i class="fa fa-circle-check me-1"></i>Confirmée</span>
+                            {% elseif reservation.etat == 'ANNULEE' %}
+                                <span class="badge-annule"><i class="fa fa-ban me-1"></i>Annulée</span>
+                            {% else %}
+                                <span class="badge-attente"><i class="fa fa-clock me-1"></i>En attente</span>
+                                {# Cancel only if still pending #}
+{#                                <form method="post" action="{{ path('app_reservation_delete', {'id': reservation.id}) }}"#}
+{#                                      onsubmit="return confirm('Annuler cette réservation ?')">#}
+{#                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id) }}">#}
+{#                                    <button type="submit" class="btn-cancel">#}
+{#                                        <i class="fa fa-xmark me-1"></i>Annuler#}
+{#                                    </button>#}
+{#                                </form>#}
+                            {% endif %}
+                        </div>
+
+                    </div>
+                {% endfor %}
+            </div>
+
+        {% endif %}
+    </div>
 {% endblock %}

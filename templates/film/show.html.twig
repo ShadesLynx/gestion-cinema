@@ -1,34 +1,212 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Film{% endblock %}
+{% block title %}{{ film.titre }} — CinéMax{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .film-hero {
+            background: linear-gradient(135deg, #10101a 0%, #1a1a2e 50%, #0f1a30 100%);
+            border-bottom: 1px solid var(--border2);
+            padding: 3rem 0;
+            position: relative; overflow: hidden;
+        }
+        .film-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none; /* TRÈS IMPORTANT : permet aux clics de traverser cet élément */
+            background: radial-gradient(ellipse 50% 80% at 90% 50%, rgba(201,168,76,.07) 0%, transparent 60%);
+        }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 7px;
+            color: var(--muted); text-decoration: none; font-size: .82rem;
+            margin-bottom: 1.5rem; transition: color .2s;
+        }
+        .back-link:hover { color: var(--gold); }
+        .film-genre-tag {
+            display: inline-block; border: 1px solid var(--border);
+            color: var(--gold); font-size: .65rem; letter-spacing: 2.5px;
+            text-transform: uppercase; padding: .3rem .9rem; border-radius: 2px;
+            font-weight: 600; margin-bottom: .9rem;
+        }
+        .film-big-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.9rem, 4vw, 3rem); font-weight: 900; color: #fff;
+            line-height: 1.1; margin-bottom: .6rem;
+        }
+        .film-year-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,.05); border: 1px solid var(--border2);
+            border-radius: 20px; font-size: .78rem; color: var(--muted);
+            padding: .28rem .85rem;
+        }
+        .film-year-chip i { color: var(--gold); }
+        .poster-block {
+            width: 160px; height: 220px;
+            background: linear-gradient(135deg, #1a1a2e, #0f3460);
+            border: 1px solid var(--border); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3.5rem; color: rgba(201,168,76,.25);
+            flex-shrink: 0;
+        }
+
+        /* Projections section */
+        .proj-section { padding: 4rem 0; }
+        .proj-card {
+            background: var(--card); border: 1px solid var(--border2); border-radius: 12px;
+            padding: 1.4rem 1.5rem; transition: border-color .2s, transform .2s;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 1rem; flex-wrap: wrap;
+        }
+        .proj-card:hover { border-color: rgba(201,168,76,.3); transform: translateX(4px); }
+        .proj-info { flex: 1; min-width: 200px; }
+        .proj-date {
+            font-family: 'Playfair Display', serif; font-size: 1.05rem;
+            font-weight: 700; color: #fff; margin-bottom: .3rem;
+        }
+        .proj-details { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .5rem; }
+        .proj-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(255,255,255,.04); border: 1px solid var(--border2);
+            border-radius: 20px; font-size: .75rem; color: var(--muted); padding: .22rem .75rem;
+        }
+        .proj-chip i { color: var(--gold); }
+        .places-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            border-radius: 20px; font-size: .75rem; font-weight: 600; padding: .22rem .75rem;
+        }
+        .places-ok   { background: rgba(34,197,94,.1);  border: 1px solid rgba(34,197,94,.25);  color: #86efac; }
+        .places-low  { background: rgba(234,179,8,.1);  border: 1px solid rgba(234,179,8,.25);  color: #fde047; }
+        .places-none { background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.25);  color: #fca5a5; }
+
+        .btn-reserve {
+            background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+            color: #08080e; font-weight: 700; border: none; padding: .6rem 1.5rem;
+            border-radius: 6px; text-decoration: none; font-size: .85rem;
+            white-space: nowrap; transition: opacity .2s; display: inline-block;
+            cursor: pointer; /* Indispensable pour un élément <button> */
+            position: relative;
+            z-index: 10; /
+        }
+        .btn-reserve:hover { opacity: .85; color: #08080e; }
+        .btn-reserve-disabled {
+            background: var(--card2); border: 1px solid var(--border2);
+            color: var(--muted); padding: .6rem 1.5rem; border-radius: 6px;
+            font-size: .85rem; cursor: not-allowed; white-space: nowrap; display: inline-block;
+        }
+        .btn-login-first {
+            border: 1px solid var(--border); color: var(--muted); padding: .58rem 1.4rem;
+            border-radius: 6px; text-decoration: none; font-size: .85rem;
+            white-space: nowrap; transition: border-color .2s, color .2s; display: inline-block;
+        }
+        .btn-login-first:hover { border-color: var(--gold); color: var(--gold); }
+        .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+        .empty-state i { font-size: 2.5rem; opacity: .2; display: block; margin-bottom: .8rem; }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Film</h1>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ film.id }}</td>
-            </tr>
-            <tr>
-                <th>Titre</th>
-                <td>{{ film.titre }}</td>
-            </tr>
-            <tr>
-                <th>DateCreation</th>
-                <td>{{ film.dateCreation ? film.dateCreation|date('Y-m-d') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Genre</th>
-                <td>{{ film.genre }}</td>
-            </tr>
-        </tbody>
-    </table>
+    {# ── FILM HERO ── #}
+    <div class="film-hero">
+        <div class="container">
+            <a href="{{ path('app_home') }}" class="back-link">
+                <i class="fa fa-arrow-left"></i> Retour aux films
+            </a>
 
-    <a href="{{ path('app_film_index') }}">back to list</a>
+            <div class="d-flex gap-4 align-items-start flex-wrap">
+                {# Poster placeholder (replace with <img> if you add image upload) #}
+                <div class="poster-block">
+                    <i class="fa fa-clapperboard"></i>
+                </div>
 
-    <a href="{{ path('app_film_edit', {'id': film.id}) }}">edit</a>
+                <div class="flex-grow-1 pt-1">
+                    {% if film.genre %}
+                        <div class="film-genre-tag">{{ film.genre }}</div>
+                    {% endif %}
+                    <h1 class="film-big-title">{{ film.titre }}</h1>
+                    <div class="film-year-chip">
+                        <i class="fa fa-calendar-days"></i>
+                        Sorti en {{ film.dateCreation ? film.dateCreation|date('Y') : '—' }}
+                    </div>
+                    <div class="mt-3" style="color:var(--muted); font-size:.88rem">
+                        <i class="fa fa-clapperboard me-2" style="color:var(--gold)"></i>
+                        <strong style="color:var(--text)">{{ projections|length }}</strong>
+                        séance{{ projections|length != 1 ? 's' : '' }} disponible{{ projections|length != 1 ? 's' : '' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    {{ include('film/_delete_form.html.twig') }}
+    {# ── PROJECTIONS LIST ── #}
+    <section class="proj-section">
+        <div class="container">
+
+            <div class="mb-4">
+                <div class="section-label">Séances</div>
+                <div class="section-title">Choisissez votre Projection</div>
+                <div class="gold-line"></div>
+            </div>
+
+            {% if projections is empty %}
+                <div class="empty-state">
+                    <i class="fa fa-calendar-xmark"></i>
+                    <p>Aucune projection disponible pour ce film.</p>
+                </div>
+            {% else %}
+                <div class="d-flex flex-column gap-3">
+                    {% for projection in projections %}
+                        <div class="proj-card">
+                            <div class="proj-info">
+                                {# Real dateProjection from DB #}
+                                <div class="proj-date">
+                                    <i class="fa fa-calendar me-2" style="color:var(--gold); font-size:.85rem"></i>
+                                    {{ projection.dateProjection|date('Y-m-d') }}
+                                </div>
+                                <div class="proj-details">
+                                    {# Real salle from DB #}
+                                    <div class="proj-chip">
+                                        <i class="fa fa-door-open"></i>
+                                        Salle {{ projection.salle }}
+                                    </div>
+                                    {# Real nbrPlaces from DB #}
+                                    <div class="proj-chip
+                                {% if projection.nbPlaces > 5 %}places-ok
+                                {% elseif projection.nbPlaces > 0 %}places-low
+                                {% else %}places-none{% endif %}">
+                                        <i class="fa fa-chair"></i>
+                                        {% if projection.nbPlaces > 0 %}
+                                            {{ projection.nbPlaces }} place{{ projection.nbPlaces != 1 ? 's' : '' }}
+                                        {% else %}
+                                            Complet
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {# Reserve button logic #}
+                            {% if projection.nbPlaces <= 0 %}
+                                <span class="btn-reserve-disabled">
+                            <i class="fa fa-ban me-1"></i> Complet
+                        </span>
+                            {% elseif not app.user %}
+                                <a href="{{ path('app_login') }}" class="btn-login-first">
+                                    <i class="fa fa-lock me-1"></i> Connexion requise
+                                </a>
+                            {% else %}
+                                <form action="{{ path('app_reservation_create', {'projectionId': projection.id}) }}" method="POST">
+                                    <button type="submit" class="btn-reserve">
+                                        <i class="fa fa-ticket me-1"></i> Réserver
+                                    </button>
+                                </form>
+                            {% endif %}
+
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+        </div>
+    </section>
 {% endblock %}
