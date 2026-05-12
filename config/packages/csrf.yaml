@@ -1,11 +1,7 @@
-# Enable stateless CSRF protection for forms and logins/logouts
+# Use Symfony's default session-based CSRF protection.
+# This avoids double-submit cookie requirements during local development.
 framework:
     form:
-        csrf_protection:
-            token_id: submit
+        csrf_protection: true
 
-    csrf_protection:
-        stateless_token_ids:
-            - submit
-            - authenticate
-            - logout
+    csrf_protection: true
